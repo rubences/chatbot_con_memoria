@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import re
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +33,7 @@ class FragmentoRAG:
     fuente: str
     contenido: str
     puntaje: float
+    temas: list[str] = field(default_factory=list)
 
 
 class ErrorConfiguracionModelo(ValueError):
@@ -76,6 +79,7 @@ class AgenteModelo:
             for fragmento in contexto_rag:
                 bloques.append(
                     f"Fuente: {fragmento.fuente}\n"
+                    f"Temas: {', '.join(fragmento.temas) if fragmento.temas else 'general'}\n"
                     f"Puntaje: {fragmento.puntaje:.2f}\n"
                     f"Contenido:\n{fragmento.contenido}"
                 )
@@ -152,6 +156,27 @@ class AgenteRAG:
         base_por_defecto = Path(__file__).parent / "conocimiento"
         self.ruta_base = ruta_base or base_por_defecto
         self.extensiones = {".md", ".txt", ".rst", ".py"}
+        self._ruta_indice = self.ruta_base / "llamaindex" / "_indice_rag.json"
+
+    def _cargar_temas_por_fuente(self) -> dict[str, list[str]]:
+        if not self._ruta_indice.exists():
+            return {}
+
+        try:
+            datos = json.loads(self._ruta_indice.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return {}
+
+        mapa: dict[str, list[str]] = {}
+        for doc in datos.get("documentos", []):
+            fuente = str(doc.get("fuente", "")).strip()
+            temas = doc.get("temas", [])
+            if not fuente:
+                continue
+            if not isinstance(temas, list):
+                temas = []
+            mapa[fuente] = [str(t).strip().lower() for t in temas if str(t).strip()]
+        return mapa
 
     def buscar(self, consulta: str, max_resultados: int = 3) -> list[FragmentoRAG]:
         if not self.ruta_base.exists():
@@ -161,9 +186,13 @@ class AgenteRAG:
         if not tokens_consulta:
             return []
 
+        temas_por_fuente = self._cargar_temas_por_fuente()
+
         resultados: list[FragmentoRAG] = []
         for archivo in self.ruta_base.rglob("*"):
             if not archivo.is_file() or archivo.suffix.lower() not in self.extensiones:
+                continue
+            if archivo.name == "_indice_rag.json":
                 continue
 
             try:
@@ -180,12 +209,16 @@ class AgenteRAG:
                 continue
 
             puntaje = len(interseccion) / max(len(tokens_consulta), 1)
+            temas = temas_por_fuente.get(archivo.name, ["general"])
+            if tokens_consulta.intersection(set(temas)):
+                puntaje += 0.15
             fragmento = contenido[:900].strip()
             resultados.append(
                 FragmentoRAG(
                     fuente=archivo.name,
                     contenido=fragmento,
                     puntaje=puntaje,
+                    temas=temas,
                 )
             )
 
@@ -254,6 +287,9 @@ class AgenteEnrutadorTematico:
             for tema, datos in self.TEMAS.items():
                 if tokens_fragmento.intersection(datos["palabras"]):
                     puntajes[tema] += 1
+            for tema_fragmento in fragmento.temas:
+                if tema_fragmento in puntajes:
+                    puntajes[tema_fragmento] += 2
 
         ordenados = sorted(puntajes.items(), key=lambda item: item[1], reverse=True)
         if not ordenados or ordenados[0][1] == 0:
