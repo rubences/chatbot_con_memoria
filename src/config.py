@@ -76,3 +76,18 @@ def clave_api_parece_placeholder(clave_api: str) -> bool:
         "demo",
     }
     return clave_api.strip().lower() in valores_placeholder
+
+
+def obtener_llama_cloud_api_key() -> str:
+    """Devuelve la API key de LlamaCloud para ingestión de documentos."""
+    return os.getenv("LLAMA_CLOUD_API_KEY", "").strip()
+
+
+def obtener_llama_cloud_tier() -> str:
+    """Devuelve el tier de parseo para LlamaCloud."""
+    return os.getenv("LLAMA_CLOUD_TIER", "agentic").strip() or "agentic"
+
+
+def obtener_llama_cloud_version() -> str:
+    """Devuelve la versión del parser de LlamaCloud."""
+    return os.getenv("LLAMA_CLOUD_VERSION", "latest").strip() or "latest"
