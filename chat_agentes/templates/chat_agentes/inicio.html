@@ -64,6 +64,14 @@
             color: var(--texto-secundario);
         }
 
+        .meta {
+            margin-top: 10px;
+            color: var(--texto-secundario);
+            font-size: 0.92rem;
+            display: grid;
+            gap: 6px;
+        }
+
         .mensajes {
             display: grid;
             gap: 14px;
@@ -158,6 +166,10 @@
                 <span>Proveedor: {{ proveedor }}</span>
                 <span>Modelo: {{ modelo }}</span>
                 <span>Modo: {{ estado }}</span>
+            </div>
+            <div class="meta">
+                <span>Agentes activos: {{ agentes_activados|join:", "|default:"general" }}</span>
+                <span>Fuentes RAG: {{ fuentes_rag|join:", "|default:"sin fuentes" }}</span>
             </div>
         </section>
 

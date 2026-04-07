@@ -5,13 +5,16 @@ Las credenciales se obtienen exclusivamente desde el archivo .env.
 
 import logging
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Cargar variables desde el archivo .env.
+# Cargar variables desde el archivo .env de la raíz del proyecto.
 # override=True garantiza que los valores del archivo siempre ganan
 # sobre cualquier variable ya definida en el proceso (p. ej. de una sesión anterior).
-load_dotenv(override=True)
+_RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
+_RUTA_ENV = _RAIZ_PROYECTO / ".env"
+load_dotenv(dotenv_path=_RUTA_ENV, override=True)
 
 logger = logging.getLogger(__name__)
 
