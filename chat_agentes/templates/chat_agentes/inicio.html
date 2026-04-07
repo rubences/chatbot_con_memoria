@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }}</title>
+    <style>
+        :root {
+            --fondo: linear-gradient(135deg, #f4efe6 0%, #dce7f2 100%);
+            --panel: rgba(255, 255, 255, 0.82);
+            --borde: rgba(30, 41, 59, 0.12);
+            --texto: #1f2937;
+            --texto-secundario: #475569;
+            --usuario: #dbeafe;
+            --asistente: #fef3c7;
+            --acento: #0f766e;
+            --acento-hover: #115e59;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            background: var(--fondo);
+            color: var(--texto);
+        }
+
+        .contenedor {
+            width: min(900px, calc(100% - 32px));
+            margin: 32px auto;
+            background: var(--panel);
+            border: 1px solid var(--borde);
+            border-radius: 24px;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+        }
+
+        .cabecera {
+            padding: 28px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .cabecera h1 {
+            margin: 0 0 6px;
+            font-size: clamp(2rem, 5vw, 3rem);
+        }
+
+        .cabecera p {
+            margin: 0;
+            color: var(--texto-secundario);
+        }
+
+        .estado {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            font-size: 0.95rem;
+            color: var(--texto-secundario);
+        }
+
+        .mensajes {
+            display: grid;
+            gap: 14px;
+            padding: 24px 28px;
+            min-height: 420px;
+        }
+
+        .mensaje {
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px solid var(--borde);
+            line-height: 1.5;
+            animation: aparecer 220ms ease;
+        }
+
+        .mensaje.user {
+            background: var(--usuario);
+        }
+
+        .mensaje.assistant {
+            background: var(--asistente);
+        }
+
+        .mensaje-vacio {
+            color: var(--texto-secundario);
+            border: 1px dashed var(--borde);
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        .formulario {
+            display: grid;
+            gap: 12px;
+            padding: 0 28px 28px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            border: 1px solid var(--borde);
+            border-radius: 18px;
+            padding: 16px;
+            font: inherit;
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        button {
+            justify-self: end;
+            border: none;
+            border-radius: 999px;
+            padding: 14px 24px;
+            font: inherit;
+            background: var(--acento);
+            color: white;
+            cursor: pointer;
+            transition: background 180ms ease, transform 180ms ease;
+        }
+
+        button:hover {
+            background: var(--acento-hover);
+            transform: translateY(-1px);
+        }
+
+        .error {
+            margin: 24px 28px 0;
+            padding: 16px;
+            border-radius: 16px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="contenedor">
+        <section class="cabecera">
+            <h1>Arquitectura Multiagente</h1>
+            <p>{{ titulo }}</p>
+            <div class="estado">
+                <span>Proveedor: {{ proveedor }}</span>
+                <span>Modelo: {{ modelo }}</span>
+                <span>Modo: {{ estado }}</span>
+            </div>
+        </section>
+
+        {% if error_configuracion %}
+            <div class="error">{{ error_configuracion }}</div>
+        {% endif %}
+
+        <section id="mensajes" class="mensajes">
+            {% for mensaje in mensajes %}
+                <article class="mensaje {{ mensaje.rol }}">
+                    <strong>{{ mensaje.rol|title }}</strong>
+                    <div>{{ mensaje.contenido|linebreaksbr }}</div>
+                </article>
+            {% empty %}
+                <div class="mensaje-vacio">Todavía no hay mensajes. El orquestador creará la conversación en cuanto envíes el primero.</div>
+            {% endfor %}
+        </section>
+
+        <form id="formulario-chat" class="formulario">
+            {% csrf_token %}
+            <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje para el agente controlador..."></textarea>
+            <button type="submit" {% if error_configuracion %}disabled{% endif %}>Enviar</button>
+        </form>
+    </main>
+
+    <script>
+        const formulario = document.getElementById("formulario-chat");
+        const cajaMensaje = document.getElementById("mensaje");
+        const contenedorMensajes = document.getElementById("mensajes");
+        const tokenCsrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+
+        function agregarMensaje(rol, contenido) {
+            const vacio = contenedorMensajes.querySelector('.mensaje-vacio');
+            if (vacio) {
+                vacio.remove();
+            }
+
+            const bloque = document.createElement("article");
+            bloque.className = `mensaje ${rol}`;
+            bloque.innerHTML = `<strong>${rol}</strong><div>${contenido.replace(/\n/g, "<br>")}</div>`;
+            contenedorMensajes.appendChild(bloque);
+            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+        }
+
+        formulario?.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+            const mensaje = cajaMensaje.value.trim();
+            if (!mensaje) {
+                return;
+            }
+
+            agregarMensaje("user", mensaje);
+            cajaMensaje.value = "";
+
+            const respuesta = await fetch("/api/chat/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": tokenCsrf,
+                },
+                body: JSON.stringify({ mensaje }),
+            });
+
+            const datos = await respuesta.json();
+            if (!respuesta.ok) {
+                agregarMensaje("assistant", datos.error || "No se pudo procesar el mensaje.");
+                return;
+            }
+
+            agregarMensaje("assistant", datos.respuesta);
+        });
+    </script>
+</body>
+</html>

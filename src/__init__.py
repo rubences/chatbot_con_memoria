@@ -1,0 +1,1 @@
+"""Utilidades de configuración y memoria reutilizables del proyecto."""
