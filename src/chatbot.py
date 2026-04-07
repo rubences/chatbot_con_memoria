@@ -2,14 +2,16 @@
 Chatbot con memoria conversacional usando Streamlit y la API de OpenAI.
 
 Flujo:
-  1. El usuario escribe un mensaje.
-  2. Se añade al historial (memoria acumulativa).
-  3. Se envía TODO el historial a la API para que el modelo tenga contexto.
-  4. La respuesta se muestra y se guarda en el historial.
+  1. Se asigna un ID de sesión único y estable al navegador.
+  2. El historial se carga desde disco (si existe) o se crea nuevo.
+  3. Cada mensaje nuevo se persiste automáticamente en JSON.
+  4. El panel lateral permite retomar conversaciones anteriores.
 """
 
+import json
 import logging
 import sys
+import uuid
 from pathlib import Path
 
 import streamlit as st
@@ -35,6 +37,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ── Carpeta de persistencia ───────────────────────────────────────────────────
+RAIZ = Path(__file__).parent.parent
+DIR_CONVERSACIONES = RAIZ / "conversaciones"
+DIR_CONVERSACIONES.mkdir(exist_ok=True)
+
 # ── Cliente de OpenAI ─────────────────────────────────────────────────────────
 _url_base = obtener_url_base()
 _proveedor = obtener_proveedor()
@@ -44,24 +51,86 @@ cliente = OpenAI(
     **({"base_url": _url_base} if _url_base else {}),
 )
 
-# ── Interfaz Streamlit ────────────────────────────────────────────────────────
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def _ruta_sesion(session_id: str) -> Path:
+    return DIR_CONVERSACIONES / f"{session_id}.json"
+
+
+def _listar_conversaciones() -> list[Path]:
+    return sorted(
+        DIR_CONVERSACIONES.glob("*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+
+def _titulo_conversacion(ruta: Path) -> str:
+    """Extrae el primer mensaje del usuario como título legible."""
+    try:
+        datos = json.loads(ruta.read_text(encoding="utf-8"))
+        for msg in datos.get("historial", []):
+            if msg.get("role") == "user":
+                texto = msg["content"]
+                return texto[:55] + ("…" if len(texto) > 55 else "")
+    except (json.JSONDecodeError, OSError):
+        pass
+    return ruta.stem[:8]
+
+
+# ── ID de sesión estable (persiste en el navegador durante la sesión) ─────────
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+
+
+# ── Panel lateral ─────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("Conversaciones")
+    if st.button("➕ Nueva conversación", use_container_width=True):
+        st.session_state.session_id = str(uuid.uuid4())
+        if "gestor_memoria" in st.session_state:
+            del st.session_state["gestor_memoria"]
+        st.rerun()
+
+    conversaciones = _listar_conversaciones()
+    if conversaciones:
+        st.divider()
+        for archivo in conversaciones:
+            etiqueta = _titulo_conversacion(archivo)
+            activa = archivo.stem == st.session_state.session_id
+            prefijo = "▶ " if activa else ""
+            if st.button(
+                f"{prefijo}{etiqueta}",
+                key=archivo.stem,
+                use_container_width=True,
+            ):
+                st.session_state.session_id = archivo.stem
+                if "gestor_memoria" in st.session_state:
+                    del st.session_state["gestor_memoria"]
+                st.rerun()
+    else:
+        st.caption("Aún no hay conversaciones guardadas.")
+
+
+# ── Carga o creación del gestor de memoria ────────────────────────────────────
+if "gestor_memoria" not in st.session_state:
+    st.session_state.gestor_memoria = GestorMemoria.cargar(
+        mensaje_sistema=obtener_mensaje_sistema(),
+        ruta_archivo=_ruta_sesion(st.session_state.session_id),
+    )
+
+gestor: GestorMemoria = st.session_state.gestor_memoria
+
+
+# ── Interfaz principal ────────────────────────────────────────────────────────
 st.title("🤖 Chatbot con Memoria")
-st.caption("Mantiene el contexto de toda la conversación en cada turno.")
-st.caption(f"Proveedor activo: {_proveedor}")
+st.caption(f"Proveedor: {_proveedor} · Modelo: {obtener_modelo()}")
 
 if clave_api_parece_placeholder(_clave_api):
     st.error(
         "La clave API parece un placeholder. Configura tu .env con una clave real "
         "(OPENAI_API_KEY o HF_API_KEY) y reinicia la app."
     )
-
-# Inicializar la memoria en la sesión de Streamlit (persiste entre reruns)
-if "gestor_memoria" not in st.session_state:
-    st.session_state.gestor_memoria = GestorMemoria(
-        mensaje_sistema=obtener_mensaje_sistema()
-    )
-
-gestor: GestorMemoria = st.session_state.gestor_memoria
 
 # Mostrar el historial de mensajes (omitiendo el mensaje de sistema)
 for mensaje in gestor.historial:
@@ -97,7 +166,7 @@ if entrada := st.chat_input("¿En qué puedo ayudarte?"):
             logger.error(mensaje_error)
             st.error(mensaje_error)
 
-# Botón para reiniciar la conversación
-if st.button("🗑️ Nueva conversación"):
+# Botón para limpiar la conversación activa sin borrar las demás
+if st.button("🗑️ Limpiar esta conversación"):
     gestor.reiniciar()
     st.rerun()
