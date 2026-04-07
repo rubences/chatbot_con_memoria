@@ -8,8 +8,10 @@ import os
 
 from dotenv import load_dotenv
 
-# Cargar variables desde el archivo .env
-load_dotenv()
+# Cargar variables desde el archivo .env.
+# override=True garantiza que los valores del archivo siempre ganan
+# sobre cualquier variable ya definida en el proceso (p. ej. de una sesión anterior).
+load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 
