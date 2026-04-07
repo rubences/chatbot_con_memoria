@@ -91,3 +91,23 @@ def obtener_llama_cloud_tier() -> str:
 def obtener_llama_cloud_version() -> str:
     """Devuelve la versión del parser de LlamaCloud."""
     return os.getenv("LLAMA_CLOUD_VERSION", "latest").strip() or "latest"
+
+
+def obtener_llama_workflow_base_url() -> str:
+    """Devuelve la URL base del deployment de LlamaIndex Workflows."""
+    return os.getenv("LLAMA_WORKFLOW_BASE_URL", "").strip()
+
+
+def obtener_llama_workflow_nombre() -> str:
+    """Devuelve el nombre del workflow remoto a ejecutar."""
+    return os.getenv("LLAMA_WORKFLOW_NAME", "").strip()
+
+
+def obtener_llama_workflow_evento_mensaje() -> str:
+    """Devuelve la clave del start_event usada para el mensaje."""
+    return os.getenv("LLAMA_WORKFLOW_EVENTO_MENSAJE", "mensaje").strip() or "mensaje"
+
+
+def obtener_llama_workflow_evento_archivo() -> str:
+    """Devuelve la clave del start_event usada para el file_id."""
+    return os.getenv("LLAMA_WORKFLOW_EVENTO_ARCHIVO", "file_id").strip() or "file_id"
