@@ -33,7 +33,9 @@ def obtener_clave_api() -> str:
         clave = os.getenv("OPENAI_API_KEY", "")
 
     if not clave:
-        logger.warning("No se encontró una clave API válida para el proveedor '%s'.", proveedor)
+        logger.warning(
+            "No se encontró una clave API válida para el proveedor '%s'.", proveedor
+        )
     return clave
 
 

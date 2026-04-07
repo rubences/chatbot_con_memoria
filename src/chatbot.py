@@ -89,7 +89,9 @@ if entrada := st.chat_input("¿En qué puedo ayudarte?"):
             contenido_respuesta = respuesta.choices[0].message.content or ""
             st.markdown(contenido_respuesta)
             gestor.agregar_mensaje("assistant", contenido_respuesta)
-            logger.info("Respuesta recibida. Mensajes en historial: %d", gestor.total_mensajes())
+            logger.info(
+                "Respuesta recibida. Mensajes en historial: %d", gestor.total_mensajes()
+            )
         except OpenAIError as error:
             mensaje_error = f"Error al comunicarse con la API: {error}"
             logger.error(mensaje_error)
