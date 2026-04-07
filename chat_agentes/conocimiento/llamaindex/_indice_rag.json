@@ -1,3 +1,188 @@
 {
-  "documentos": []
+  "documentos": [
+    {
+      "fuente": "4.1_PYTHON_PARA_IA.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/4.1_PYTHON_PARA_IA.md",
+      "temas": [
+        "python",
+        "django",
+        "ia"
+      ],
+      "tokens_unicos": 599,
+      "tamano_caracteres": 26809
+    },
+    {
+      "fuente": "4.2_PYDANTIC.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/4.2_PYDANTIC.md",
+      "temas": [
+        "python",
+        "django",
+        "ia"
+      ],
+      "tokens_unicos": 616,
+      "tamano_caracteres": 29049
+    },
+    {
+      "fuente": "4.3_LANGGRAPH.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/4.3_LANGGRAPH.md",
+      "temas": [
+        "python",
+        "ia"
+      ],
+      "tokens_unicos": 505,
+      "tamano_caracteres": 21132
+    },
+    {
+      "fuente": "4.4_CREWAI.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/4.4_CREWAI.md",
+      "temas": [
+        "python",
+        "ia"
+      ],
+      "tokens_unicos": 550,
+      "tamano_caracteres": 29946
+    },
+    {
+      "fuente": "4.5_LANGSMITH.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/4.5_LANGSMITH.md",
+      "temas": [
+        "python",
+        "django",
+        "ia"
+      ],
+      "tokens_unicos": 638,
+      "tamano_caracteres": 24240
+    },
+    {
+      "fuente": "BUBBLE.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/BUBBLE.md",
+      "temas": [
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 601,
+      "tamano_caracteres": 28946
+    },
+    {
+      "fuente": "CANVA_AI_(MAGIC_STUDIO).md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/CANVA_AI_(MAGIC_STUDIO).md",
+      "temas": [
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 607,
+      "tamano_caracteres": 31818
+    },
+    {
+      "fuente": "FLUTTERFLOW_(Y_ADALO).md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/FLUTTERFLOW_(Y_ADALO).md",
+      "temas": [
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 577,
+      "tamano_caracteres": 28398
+    },
+    {
+      "fuente": "GLIDE.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/GLIDE.md",
+      "temas": [
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 580,
+      "tamano_caracteres": 26260
+    },
+    {
+      "fuente": "HUBSPOT_AI.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/HUBSPOT_AI.md",
+      "temas": [
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 625,
+      "tamano_caracteres": 31496
+    },
+    {
+      "fuente": "IA_EN_FINANZAS_Y_CONTABILIDAD.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/IA_EN_FINANZAS_Y_CONTABILIDAD.md",
+      "temas": [
+        "django",
+        "ia",
+        "negocio"
+      ],
+      "tokens_unicos": 683,
+      "tamano_caracteres": 32992
+    },
+    {
+      "fuente": "IA_EN_RECURSOS_HUMANOS.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/IA_EN_RECURSOS_HUMANOS.md",
+      "temas": [
+        "django",
+        "ia",
+        "negocio"
+      ],
+      "tokens_unicos": 611,
+      "tamano_caracteres": 30546
+    },
+    {
+      "fuente": "IA_EN_SUPPLY_CHAIN_Y_OPERACIONES.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/IA_EN_SUPPLY_CHAIN_Y_OPERACIONES.md",
+      "temas": [
+        "django",
+        "ia",
+        "negocio"
+      ],
+      "tokens_unicos": 540,
+      "tamano_caracteres": 31869
+    },
+    {
+      "fuente": "MAKE.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/MAKE.md",
+      "temas": [
+        "python",
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 617,
+      "tamano_caracteres": 27833
+    },
+    {
+      "fuente": "MASTERCLASS_EL_CASO_PRÁCTICO.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/MASTERCLASS_EL_CASO_PRÁCTICO.md",
+      "temas": [
+        "python",
+        "django",
+        "ia",
+        "automatizacion"
+      ],
+      "tokens_unicos": 633,
+      "tamano_caracteres": 35749
+    },
+    {
+      "fuente": "PROMPT_ENGINEERING_AVANZADO.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/PROMPT_ENGINEERING_AVANZADO.md",
+      "temas": [
+        "django",
+        "ia"
+      ],
+      "tokens_unicos": 707,
+      "tamano_caracteres": 33906
+    },
+    {
+      "fuente": "v0_by_Vercel.md",
+      "ruta": "/workspaces/chatbot_con_memoria/chat_agentes/conocimiento/llamaindex/v0_by_Vercel.md",
+      "temas": [
+        "ia"
+      ],
+      "tokens_unicos": 589,
+      "tamano_caracteres": 26972
+    }
+  ]
 }
