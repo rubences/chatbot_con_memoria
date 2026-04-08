@@ -265,6 +265,17 @@
                 <p class="nota">Tambien permite supervison humana (human-in-the-loop), util cuando se necesita control operativo y cumplimiento.</p>
             </article>
 
+            <article class="seccion" id="acp">
+                <h2>ACP y interoperabilidad</h2>
+                <p>ACP propone una capa de mensajeria estandarizada (JSON + metadatos) para que agentes creados en marcos distintos puedan colaborar sin integraciones ad-hoc.</p>
+                <ul>
+                    <li>Formato comun de mensaje y metadatos.</li>
+                    <li>Separacion entre comunicacion y logica interna del agente.</li>
+                    <li>Mayor modularidad, trazabilidad y escalabilidad entre equipos.</li>
+                </ul>
+                <p>En este proyecto se implemento un endpoint compatible con este enfoque: <strong>/api/acp/run/</strong>, que acepta mensajes estructurados y orquesta estrategias <em>crewai</em> o <em>rewoo</em>.</p>
+            </article>
+
             <article class="seccion">
                 <h2>Direccion futura</h2>
                 <ol>

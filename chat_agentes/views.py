@@ -149,8 +149,11 @@ def analisis_llamada(request: HttpRequest) -> HttpResponse | JsonResponse:
 	except ErrorConfiguracionModelo as error:
 		return JsonResponse({"error": str(error)}, status=400)
 	except RuntimeError as error:
-		logger.error("Fallo en el análisis CrewAI: %s", error)
-		return JsonResponse({"error": str(error)}, status=500)
+		logger.error("Fallo en el análisis CrewAI/ReWOO: %s", error)
+		mensaje = str(error)
+		if "429" in mensaje or "rate" in mensaje.lower():
+			return JsonResponse({"error": mensaje}, status=429)
+		return JsonResponse({"error": mensaje}, status=500)
 
 	return JsonResponse(
 		{
@@ -193,4 +196,7 @@ def acp_run(request: HttpRequest) -> JsonResponse:
 		return JsonResponse({"error": str(error)}, status=400)
 	except RuntimeError as error:
 		logger.error("Fallo en corrida ACP: %s", error)
-		return JsonResponse({"error": str(error)}, status=500)
+		mensaje = str(error)
+		if "429" in mensaje or "rate" in mensaje.lower():
+			return JsonResponse({"error": mensaje}, status=429)
+		return JsonResponse({"error": mensaje}, status=500)

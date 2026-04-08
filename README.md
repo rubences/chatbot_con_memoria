@@ -98,8 +98,69 @@ Variables relevantes en `.env`:
 - `MODELO`
 - `TEMPERATURA`
 - `SERPER_API_KEY` (opcional, para búsqueda web en ReWOO)
+- `OPENROUTER_API_KEY` (si `PROVEEDOR=openrouter`)
+- `REWOO_MAX_REINTENTOS_429` (opcional, por defecto `3`)
+- `REWOO_BACKOFF_INICIAL_SEGUNDOS` (opcional, por defecto `1.5`)
 
 Nota: el equipo CrewAI reutiliza la misma configuración de modelo definida en `src/config.py`.
+
+### Configuración rápida para OpenRouter
+
+```bash
+PROVEEDOR=openrouter
+OPENROUTER_API_KEY=sk-or-...tu-clave...
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+MODELO=meta-llama/llama-3.3-70b-instruct:free
+```
+
+Si recibes errores `402` (sin créditos) o `429` (rate limit), cambia a otro modelo `:free` o reintenta más tarde.
+ReWOO aplica retry exponencial automático para `429` antes de devolver error final.
+
+## ACP en este proyecto
+
+Se añadió un endpoint de interoperabilidad inspirado en ACP:
+
+- `POST /api/acp/run/`
+
+Formato de mensaje (JSON):
+
+```json
+{
+	"message": {
+		"role": "user",
+		"parts": [
+			{
+				"content": "<transcripcion de llamada>",
+				"content_type": "text/plain"
+			}
+		],
+		"metadata": {
+			"estrategia": "rewoo",
+			"usar_busqueda_web": true
+		}
+	}
+}
+```
+
+Ejemplo con `curl`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/acp/run/ \
+	-H "Content-Type: application/json" \
+	-d '{
+		"message": {
+			"role": "user",
+			"parts": [{"content": "Transcripción de ejemplo...", "content_type": "text/plain"}],
+			"metadata": {"estrategia": "rewoo", "usar_busqueda_web": true}
+		}
+	}'
+```
+
+Respuesta:
+
+- `input_message`: mensaje ACP recibido.
+- `output_message`: mensaje ACP generado por el agente.
+- `run_status`: estado de ejecución.
 
 ## Estrategias de colaboración multiagente
 

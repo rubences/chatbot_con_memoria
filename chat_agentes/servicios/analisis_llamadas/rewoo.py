@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from dataclasses import dataclass
 
 import requests
@@ -53,10 +54,21 @@ class OrquestadorReWOOAnalisis:
 
         self._modelo = obtener_modelo()
         self._temperatura = obtener_temperatura()
+        self._max_reintentos_429 = max(0, int(os.getenv("REWOO_MAX_REINTENTOS_429", "3")))
+        self._backoff_inicial_segundos = max(
+            0.2,
+            float(os.getenv("REWOO_BACKOFF_INICIAL_SEGUNDOS", "1.5")),
+        )
         self._cliente = OpenAI(
             api_key=clave_api,
             **({"base_url": obtener_url_base()} if obtener_url_base() else {}),
         )
+
+    @staticmethod
+    def _es_error_rate_limit(mensaje_error: str) -> bool:
+        """Determina si el error corresponde a límite de tasa (429)."""
+        texto = mensaje_error.lower()
+        return "429" in texto or "rate-limited" in texto or "rate limit" in texto
 
     def planificador(self, transcripcion: str) -> list[str]:
         """Genera subpreguntas especializadas para la transcripcion."""
@@ -95,27 +107,64 @@ class OrquestadorReWOOAnalisis:
             return ""
 
     def _generar_texto(self, prompt: str) -> str:
-        """Genera texto con el modelo configurado."""
-        try:
-            respuesta = self._cliente.chat.completions.create(
-                model=self._modelo,
-                temperature=self._temperatura,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "Eres un analista de calidad de call center. "
-                            "Responde de forma clara, concreta y basada en evidencia."
-                        ),
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-            )
-        except OpenAIError as error:
-            logger.error("Error LLM en ReWOO: %s", error)
-            raise RuntimeError(f"Fallo al generar respuesta ReWOO: {error}") from error
+        """Genera texto con el modelo configurado y retry exponencial para 429."""
+        intentos_totales = self._max_reintentos_429 + 1
 
-        return (respuesta.choices[0].message.content or "").strip()
+        for intento in range(1, intentos_totales + 1):
+            try:
+                respuesta = self._cliente.chat.completions.create(
+                    model=self._modelo,
+                    temperature=self._temperatura,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "Eres un analista de calidad de call center. "
+                                "Responde de forma clara, concreta y basada en evidencia."
+                            ),
+                        },
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                return (respuesta.choices[0].message.content or "").strip()
+            except OpenAIError as error:
+                mensaje = str(error)
+                logger.error("Error LLM en ReWOO (intento %d/%d): %s", intento, intentos_totales, mensaje)
+
+                # Mensajes más claros para proveedores OpenAI-compatible (OpenRouter incluido).
+                if "402" in mensaje or "Insufficient credits" in mensaje:
+                    raise ErrorConfiguracionModelo(
+                        "El proveedor no tiene créditos suficientes para el modelo actual. "
+                        "Usa un modelo gratuito (:free) o recarga créditos."
+                    ) from error
+                if "404" in mensaje or "No endpoints found" in mensaje:
+                    raise ErrorConfiguracionModelo(
+                        "El modelo configurado no existe o no está disponible en el proveedor. "
+                        "Revisa la variable MODELO en .env."
+                    ) from error
+
+                # Retry exponencial solo para rate-limit.
+                if self._es_error_rate_limit(mensaje) and intento < intentos_totales:
+                    espera = self._backoff_inicial_segundos * (2 ** (intento - 1))
+                    logger.warning(
+                        "Rate-limit detectado; reintentando en %.1f s (intento %d/%d).",
+                        espera,
+                        intento + 1,
+                        intentos_totales,
+                    )
+                    time.sleep(espera)
+                    continue
+
+                if self._es_error_rate_limit(mensaje):
+                    raise RuntimeError(
+                        "El modelo está temporalmente limitado por tasa (429). "
+                        "Se agotaron los reintentos automáticos; intenta de nuevo en unos segundos o cambia de modelo."
+                    ) from error
+
+                raise RuntimeError(f"Fallo al generar respuesta ReWOO: {mensaje}") from error
+
+        # No debería alcanzarse por el control de flujo anterior.
+        raise RuntimeError("No se pudo generar texto en ReWOO.")
 
     def trabajador(self, subpregunta: str, transcripcion: str) -> str:
         """Resuelve una subpregunta con evidencia RAG y web opcional."""
