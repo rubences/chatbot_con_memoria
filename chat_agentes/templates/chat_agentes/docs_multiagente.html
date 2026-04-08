@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estrategias Multiagente</title>
+    <style>
+        :root {
+            --fondo: radial-gradient(circle at 85% 15%, #dbeafe 0%, #f8f5ef 40%, #f4efe6 100%);
+            --panel: rgba(255, 255, 255, 0.86);
+            --borde: rgba(30, 41, 59, 0.14);
+            --texto: #1f2937;
+            --texto-secundario: #475569;
+            --acento: #0f766e;
+            --acento-hover: #115e59;
+            --chip-a: #d1fae5;
+            --chip-b: #fef3c7;
+            --chip-c: #dbeafe;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--texto);
+            background: var(--fondo);
+        }
+
+        .contenedor {
+            width: min(1040px, calc(100% - 28px));
+            margin: 24px auto 36px;
+            background: var(--panel);
+            border: 1px solid var(--borde);
+            border-radius: 22px;
+            box-shadow: 0 20px 52px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+            backdrop-filter: blur(18px);
+        }
+
+        .cabecera {
+            padding: 28px 30px 22px;
+            border-bottom: 1px solid var(--borde);
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .cabecera h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+        }
+
+        .cabecera p {
+            margin: 0;
+            color: var(--texto-secundario);
+            max-width: 70ch;
+            line-height: 1.5;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .boton {
+            text-decoration: none;
+            border: 1px solid var(--borde);
+            color: var(--texto-secundario);
+            border-radius: 999px;
+            padding: 9px 15px;
+            font-size: 0.86rem;
+            background: rgba(255, 255, 255, 0.7);
+            transition: background 150ms ease;
+        }
+
+        .boton:hover { background: rgba(15, 118, 110, 0.08); }
+
+        .cuerpo {
+            padding: 26px 30px 32px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .seccion {
+            border: 1px solid var(--borde);
+            border-radius: 16px;
+            padding: 18px 18px 16px;
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .seccion h2 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+        }
+
+        .seccion h3 {
+            margin: 14px 0 6px;
+            font-size: 1rem;
+        }
+
+        .seccion p {
+            margin: 0 0 8px;
+            line-height: 1.6;
+            color: var(--texto);
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0 2px;
+        }
+
+        .chip {
+            border-radius: 999px;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border: 1px solid var(--borde);
+        }
+
+        .chip.reglas { background: var(--chip-a); color: #065f46; }
+        .chip.roles { background: var(--chip-b); color: #92400e; }
+        .chip.modelos { background: var(--chip-c); color: #1e3a8a; }
+
+        ul, ol {
+            margin: 8px 0 0;
+            padding-left: 1.2em;
+            line-height: 1.6;
+        }
+
+        li { margin-bottom: 4px; }
+
+        .grid-marcos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+
+        .marco {
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .marco strong { display: block; margin-bottom: 5px; }
+
+        .nota {
+            border-left: 3px solid var(--acento);
+            padding-left: 12px;
+            color: var(--texto-secundario);
+        }
+
+        @media (max-width: 720px) {
+            .cabecera, .cuerpo {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="contenedor">
+        <header class="cabecera">
+            <div>
+                <h1>Estrategias de Colaboracion Multiagente</h1>
+                <p>Resumen practico para disenar sistemas con varios agentes, incluyendo enfoques de colaboracion, marcos de trabajo y una referencia empresarial para orquestacion de flujos complejos.</p>
+            </div>
+            <div class="acciones">
+                <a class="boton" href="/">Volver al chat</a>
+                <a class="boton" href="/analisis/">Ir al analisis de llamadas</a>
+            </div>
+        </header>
+
+        <section class="cuerpo">
+            <article class="seccion">
+                <h2>Estrategias de colaboracion</h2>
+                <div class="chips">
+                    <span class="chip reglas">Basada en reglas</span>
+                    <span class="chip roles">Basada en roles</span>
+                    <span class="chip modelos">Basada en modelos</span>
+                </div>
+
+                <h3>1) Basada en reglas</h3>
+                <p>Las interacciones siguen reglas explicitas y flujo predecible. Es ideal para procesos altamente estructurados donde importa la consistencia.</p>
+                <ul>
+                    <li>Pros: alta estabilidad, trazabilidad y control.</li>
+                    <li>Contras: poca adaptabilidad ante escenarios cambiantes.</li>
+                </ul>
+
+                <h3>2) Basada en roles</h3>
+                <p>Cada agente tiene responsabilidad especializada y se coordina con otros para cumplir el objetivo global. Es el patron principal del modulo actual.</p>
+                <ul>
+                    <li>Pros: modularidad, especializacion y escalado por capacidades.</li>
+                    <li>Contras: requiere buena integracion y coordinacion entre agentes.</li>
+                </ul>
+
+                <h3>3) Basada en modelos</h3>
+                <p>Los agentes razonan con estado interno y contexto incierto (por ejemplo, inferencia probabilistica), adaptando decisiones de forma dinamica.</p>
+                <ul>
+                    <li>Pros: flexibilidad y mejor respuesta en entornos ambiguos.</li>
+                    <li>Contras: mayor complejidad de implementacion y coste computacional.</li>
+                </ul>
+            </article>
+
+            <article class="seccion">
+                <h2>Marcos multiagente</h2>
+                <div class="grid-marcos">
+                    <div class="marco">
+                        <strong>IBM Bee Agent Framework</strong>
+                        <p>Arquitectura modular orientada a produccion, con control de estado y continuidad de procesos.</p>
+                    </div>
+                    <div class="marco">
+                        <strong>LangChain Agents</strong>
+                        <p>Ecosistema amplio de herramientas e integraciones para razonamiento de varios pasos.</p>
+                    </div>
+                    <div class="marco">
+                        <strong>OpenAI Swarm</strong>
+                        <p>Coordinacion ligera mediante handoffs entre agentes especializados.</p>
+                    </div>
+                    <div class="marco">
+                        <strong>CrewAI (implementado aqui)</strong>
+                        <p>Define agentes, tareas y herramientas con ejecucion secuencial o paralela de forma sencilla.</p>
+                    </div>
+                </div>
+            </article>
+
+            <article class="seccion" id="rewoo">
+                <h2>Metodologia ReWOO</h2>
+                <p>ReWOO separa razonamiento, recuperacion externa y sintesis final para que el agente sea mas eficiente en tokens y mas robusto ante tareas complejas.</p>
+
+                <h3>Componentes clave</h3>
+                <ol>
+                    <li><strong>Planificador:</strong> divide la tarea principal en subpreguntas concretas y ordenadas.</li>
+                    <li><strong>Trabajador:</strong> usa herramientas (busqueda web, bases de datos, RAG) para reunir evidencia por subpregunta.</li>
+                    <li><strong>Solucionador:</strong> combina la evidencia y redacta una respuesta final clara y bien estructurada.</li>
+                </ol>
+
+                <h3>Por que usarlo</h3>
+                <ul>
+                    <li>Reduce repeticion de instrucciones y consumo de tokens.</li>
+                    <li>Mejora control del razonamiento paso a paso.</li>
+                    <li>Escala mejor para resumenes largos y preguntas con conocimiento externo.</li>
+                </ul>
+
+                <h3>Encaje con este proyecto</h3>
+                <p>La arquitectura actual por roles (Analizador, QA, Generador) ya esta preparada para adoptar ReWOO:</p>
+                <ul>
+                    <li>Planificador: genera subpreguntas para cada llamada.</li>
+                    <li>Trabajador: recupera contexto con RAG y herramientas de evaluacion.</li>
+                    <li>Solucionador: construye el informe final con recomendaciones priorizadas.</li>
+                </ul>
+
+                <p class="nota">Referencia de contenido base: 7dd18e2df2ece3986a17c6a6fe2a5569a40b3e56</p>
+            </article>
+
+            <article class="seccion">
+                <h2>Referencia empresarial: watsonx Orchestrate</h2>
+                <p>Un enfoque empresarial robusto combina un registro de habilidades, analizador de intenciones, orquestador de flujos con reintentos y memoria compartida para continuidad contextual entre agentes.</p>
+                <p class="nota">Tambien permite supervison humana (human-in-the-loop), util cuando se necesita control operativo y cumplimiento.</p>
+            </article>
+
+            <article class="seccion">
+                <h2>Direccion futura</h2>
+                <ol>
+                    <li>Inteligencia colectiva emergente con mayor calidad por colaboracion especializada.</li>
+                    <li>Mas trazabilidad y evaluacion automatica por agente/tarea.</li>
+                    <li>Flujos hibridos (secuencial + paralelo) para reducir latencia sin perder control.</li>
+                    <li>Mayor integracion con paneles de negocio y supervision humana.</li>
+                </ol>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

@@ -6,6 +6,8 @@ Uso:
     python manage.py analizar_llamada                         # Usa la transcripción de ejemplo
     python manage.py analizar_llamada ruta/transcripcion.txt  # Usa un archivo propio
     python manage.py analizar_llamada --salida informe.md     # Guarda el resultado en disco
+    python manage.py analizar_llamada --estrategia rewoo      # Ejecuta pipeline ReWOO
+    python manage.py analizar_llamada --estrategia rewoo --busqueda-web
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from chat_agentes.servicios.analisis_llamadas.equipo import EquipoAnalisisLlamadas
+from chat_agentes.servicios.analisis_llamadas.rewoo import OrquestadorReWOOAnalisis
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +48,24 @@ class Command(BaseCommand):
             default=None,
             help="Ruta al archivo donde guardar el informe generado (opcional).",
         )
+        parser.add_argument(
+            "--estrategia",
+            "-e",
+            choices=["crewai", "rewoo"],
+            default="crewai",
+            help="Estrategia de orquestación a ejecutar.",
+        )
+        parser.add_argument(
+            "--busqueda-web",
+            action="store_true",
+            help="Activa búsqueda web con Serper (solo aplica en estrategia rewoo).",
+        )
 
     def handle(self, *args: object, **options: object) -> None:
         ruta_str: str | None = options.get("transcripcion")  # type: ignore[assignment]
         ruta_salida: str | None = options.get("salida")  # type: ignore[assignment]
+        estrategia: str = options.get("estrategia", "crewai")  # type: ignore[assignment]
+        busqueda_web: bool = bool(options.get("busqueda_web", False))
 
         # ── Cargar transcripción ──────────────────────────────────────────────
         if ruta_str:
@@ -75,13 +92,18 @@ class Command(BaseCommand):
         # ── Ejecutar equipo ───────────────────────────────────────────────────
         self.stdout.write(
             self.style.WARNING(
-                "Iniciando análisis multiagente CrewAI. Esto puede tardar varios minutos…"
+                f"Iniciando análisis multiagente ({estrategia}). Esto puede tardar varios minutos…"
             )
         )
 
         try:
-            equipo = EquipoAnalisisLlamadas()
-            informe = equipo.analizar(transcripcion)
+            if estrategia == "rewoo":
+                orquestador = OrquestadorReWOOAnalisis(usar_busqueda_web=busqueda_web)
+                resultado = orquestador.analizar(transcripcion)
+                informe = resultado.informe_markdown
+            else:
+                equipo = EquipoAnalisisLlamadas()
+                informe = equipo.analizar(transcripcion)
         except ValueError as error:
             raise CommandError(str(error)) from error
         except RuntimeError as error:

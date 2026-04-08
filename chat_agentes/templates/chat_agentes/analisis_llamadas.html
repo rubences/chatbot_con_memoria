@@ -257,7 +257,10 @@
             <h1>Análisis de Llamadas · CrewAI</h1>
             <p>Tres agentes IA colaboran para analizar transcripciones de call center.</p>
         </div>
-        <a href="/" class="nav-link">← Volver al chat</a>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="/docs/multiagente/" class="nav-link">Estrategias multiagente</a>
+            <a href="/" class="nav-link">← Volver al chat</a>
+        </div>
     </header>
 
     <!-- Pipeline visual -->
@@ -279,6 +282,19 @@
                 name="transcripcion"
                 placeholder="Pega aquí la transcripción de la llamada o usa la de ejemplo…"
             ></textarea>
+        </div>
+        <div>
+            <label for="estrategia">Estrategia de orquestación</label>
+            <select id="estrategia" name="estrategia" style="width: 100%; border: 1px solid var(--borde); border-radius: 12px; padding: 10px 12px; font: inherit; background: rgba(255,255,255,0.9);">
+                <option value="crewai" {% if estrategia_default == "crewai" %}selected{% endif %}>CrewAI (equipo por roles)</option>
+                <option value="rewoo" {% if estrategia_default == "rewoo" %}selected{% endif %}>ReWOO (planificador/trabajador/solucionador)</option>
+            </select>
+        </div>
+        <div id="bloque-busqueda-web" style="display: none;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input id="usar-busqueda-web" type="checkbox" />
+                Activar búsqueda web con Serper (solo ReWOO)
+            </label>
         </div>
         <div class="controles">
             <span class="hint">El análisis puede tardar 1-3 minutos según el modelo.</span>
@@ -310,6 +326,9 @@
 
     const formulario = document.getElementById("formulario-analisis");
     const textarea = document.getElementById("transcripcion");
+    const selectorEstrategia = document.getElementById("estrategia");
+    const bloqueBusquedaWeb = document.getElementById("bloque-busqueda-web");
+    const checkBusquedaWeb = document.getElementById("usar-busqueda-web");
     const tokenCsrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
     const btnAnalizar = document.getElementById("btn-analizar");
     const btnEjemplo = document.getElementById("btn-ejemplo");
@@ -320,7 +339,7 @@
     const btnDescargar = document.getElementById("btn-descargar");
 
     // Transcripción de ejemplo inyectada desde Django
-    const TRANSCRIPCION_EJEMPLO = {{ transcripcion_ejemplo|escapejs|safe }};
+    const TRANSCRIPCION_EJEMPLO = "{{ transcripcion_ejemplo|escapejs }}";
 
     function setAnalizando(activo) {
         btnAnalizar.disabled = activo;
@@ -339,6 +358,14 @@
         errorBloque.classList.remove("visible");
     }
 
+    function actualizarUIEstrategia() {
+        const esRewoo = selectorEstrategia.value === "rewoo";
+        bloqueBusquedaWeb.style.display = esRewoo ? "block" : "none";
+    }
+
+    selectorEstrategia.addEventListener("change", actualizarUIEstrategia);
+    actualizarUIEstrategia();
+
     btnEjemplo.addEventListener("click", () => {
         textarea.value = TRANSCRIPCION_EJEMPLO;
         textarea.focus();
@@ -347,6 +374,8 @@
     formulario.addEventListener("submit", async (evento) => {
         evento.preventDefault();
         const transcripcion = textarea.value.trim();
+        const estrategia = selectorEstrategia.value;
+        const usarBusquedaWeb = estrategia === "rewoo" && checkBusquedaWeb.checked;
         if (!transcripcion) {
             mostrarError("Debes proporcionar el texto de la transcripción.");
             return;
@@ -363,7 +392,11 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": tokenCsrf,
                 },
-                body: JSON.stringify({ transcripcion }),
+                body: JSON.stringify({
+                    transcripcion,
+                    estrategia,
+                    usar_busqueda_web: usarBusquedaWeb,
+                }),
             });
 
             const datos = await respuesta.json();

@@ -29,11 +29,14 @@ def obtener_clave_api() -> str:
     Devuelve la clave de API según el proveedor configurado.
 
     - openai: usa OPENAI_API_KEY
+    - openrouter: usa OPENROUTER_API_KEY (o OPENAI_API_KEY como fallback)
     - huggingface: usa HF_API_KEY (o OPENAI_API_KEY como fallback)
     """
     proveedor = obtener_proveedor()
     if proveedor == "huggingface":
         clave = os.getenv("HF_API_KEY") or os.getenv("OPENAI_API_KEY", "")
+    elif proveedor == "openrouter":
+        clave = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY", "")
     else:
         clave = os.getenv("OPENAI_API_KEY", "")
 
@@ -49,6 +52,8 @@ def obtener_url_base() -> str | None:
     proveedor = obtener_proveedor()
     if proveedor == "huggingface":
         return os.getenv("OPENAI_BASE_URL", "https://router.huggingface.co/v1")
+    if proveedor == "openrouter":
+        return os.getenv("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
     return os.getenv("OPENAI_BASE_URL")
 
 

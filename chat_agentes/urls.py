@@ -14,4 +14,6 @@ urlpatterns = [
 
 urlpatterns += [
     path("analisis/", views.analisis_llamada, name="analisis_llamada"),
+    path("docs/multiagente/", views.docs_multiagente, name="docs_multiagente"),
+    path("api/acp/run/", views.acp_run, name="acp_run"),
 ]
