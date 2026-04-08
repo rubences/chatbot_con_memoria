@@ -2,6 +2,8 @@
 
 Chatbot con memoria conversacional que ahora incluye una arquitectura Django basada en tres agentes y un orquestador central.
 
+https://medium.com/@jddam/gu%C3%ADa-completa-langgraph-y-el-futuro-de-los-agentes-de-ia-en-2025-2f34ceaa456f
+
 ## Arquitectura
 
 - AgenteModelo: encapsula la comunicación con el proveedor LLM.

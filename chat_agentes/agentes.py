@@ -20,6 +20,7 @@ from src.config import (
     obtener_mensaje_sistema,
     obtener_modelo,
     obtener_proveedor,
+    obtener_temperatura,
     obtener_url_base,
 )
 
@@ -97,6 +98,7 @@ class AgenteModelo:
         try:
             respuesta = self._cliente.chat.completions.create(
                 model=self.modelo,
+                temperature=obtener_temperatura(),
                 messages=mensajes,
             )
         except OpenAIError as error:

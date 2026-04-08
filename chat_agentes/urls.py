@@ -9,4 +9,9 @@ app_name = "chat_agentes"
 urlpatterns = [
     path("", views.inicio, name="inicio"),
     path("api/chat/", views.enviar_mensaje, name="enviar_mensaje"),
+    path("api/chat/limpiar/", views.limpiar_conversacion, name="limpiar_conversacion"),
+]
+
+urlpatterns += [
+    path("analisis/", views.analisis_llamada, name="analisis_llamada"),
 ]

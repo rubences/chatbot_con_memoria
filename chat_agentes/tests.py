@@ -108,3 +108,83 @@ class AgenteRAGTests(TestCase):
 		resultados = agente_rag.buscar("django migraciones orm", max_resultados=2)
 		self.assertGreaterEqual(len(resultados), 1)
 		self.assertTrue(any(item.fuente == "django.md" for item in resultados))
+
+	def test_busqueda_sin_tokens_devuelve_lista_vacia(self) -> None:
+		agente_rag = AgenteRAG()
+		resultados = agente_rag.buscar("   ", max_resultados=3)
+		self.assertEqual(resultados, [])
+
+	def test_resultado_no_supera_max_resultados(self) -> None:
+		agente_rag = AgenteRAG()
+		resultados = agente_rag.buscar("python funciones lista", max_resultados=1)
+		self.assertLessEqual(len(resultados), 1)
+
+	def test_resultados_ordenados_por_puntaje_descendente(self) -> None:
+		agente_rag = AgenteRAG()
+		resultados = agente_rag.buscar("python django orm clase vista", max_resultados=5)
+		puntajes = [item.puntaje for item in resultados]
+		self.assertEqual(puntajes, sorted(puntajes, reverse=True))
+
+	def test_tokenizar_normaliza_a_minusculas(self) -> None:
+		tokens = AgenteRAG._tokenizar("Python Django ORM")
+		self.assertIn("python", tokens)
+		self.assertIn("django", tokens)
+		self.assertIn("orm", tokens)
+
+	def test_tokenizar_filtra_tokens_cortos(self) -> None:
+		tokens = AgenteRAG._tokenizar("es un la lo de id")
+		# Tokens menores de 3 caracteres se descartan
+		self.assertEqual(tokens, set())
+
+
+class AgenteEnrutadorTematicoTests(TestCase):
+	def setUp(self) -> None:
+		self.enrutador = AgenteEnrutadorTematico()
+
+	def test_detecta_python(self) -> None:
+		agentes = self.enrutador.seleccionar_agentes("funciones y listas en python", [])
+		self.assertIn("python", agentes)
+
+	def test_detecta_django(self) -> None:
+		agentes = self.enrutador.seleccionar_agentes("como hacer migraciones en django", [])
+		self.assertIn("django", agentes)
+
+	def test_detecta_ia(self) -> None:
+		agentes = self.enrutador.seleccionar_agentes("rag embeddings transformer llm", [])
+		self.assertIn("ia", agentes)
+
+	def test_fallback_general(self) -> None:
+		agentes = self.enrutador.seleccionar_agentes("hola que tal esto", [])
+		self.assertEqual(agentes, ["general"])
+
+	def test_instrucciones_no_vacia_para_agentes_conocidos(self) -> None:
+		for tema in ("python", "django", "ia", "general"):
+			instrucciones = self.enrutador.instrucciones_para(tema)
+			self.assertTrue(instrucciones.strip())
+
+	def test_no_supera_tres_agentes(self) -> None:
+		fragmentos = [
+			FragmentoRAG(fuente="x.md", contenido="python django ia rag orm funciones", puntaje=0.9)
+		]
+		agentes = self.enrutador.seleccionar_agentes(
+			"python django ia rag embeddings modelo clase", fragmentos
+		)
+		self.assertLessEqual(len(agentes), 3)
+
+
+class LimpiarConversacionViewTests(TestCase):
+	def test_limpiar_conversacion_elimina_mensajes_existentes(self) -> None:
+		# Crear sesión y conversación de prueba
+		self.client.get("/")
+		session = self.client.session
+		session.create()
+		session.save()
+		# Verificar que hay conversación
+		response = self.client.post("/api/chat/limpiar/")
+		self.assertEqual(response.status_code, 200)
+		datos = response.json()
+		self.assertTrue(datos.get("ok"))
+
+	def test_limpiar_rechaza_get(self) -> None:
+		response = self.client.get("/api/chat/limpiar/")
+		self.assertEqual(response.status_code, 405)

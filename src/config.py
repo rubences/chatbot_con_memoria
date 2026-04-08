@@ -57,6 +57,16 @@ def obtener_modelo() -> str:
     return os.getenv("MODELO", "gpt-4o")
 
 
+def obtener_temperatura() -> float:
+    """Devuelve la temperatura de muestreo del modelo (0.0–2.0)."""
+    try:
+        valor = float(os.getenv("TEMPERATURA", "0.7"))
+        return max(0.0, min(2.0, valor))
+    except ValueError:
+        logger.warning("TEMPERATURA no es un número válido; se usa 0.7.")
+        return 0.7
+
+
 def obtener_mensaje_sistema() -> str:
     """Devuelve el mensaje de sistema que define la personalidad del asistente."""
     return os.getenv(
