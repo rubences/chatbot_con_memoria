@@ -81,6 +81,32 @@ python manage.py runserver
 
 La interfaz principal queda disponible en la ruta raíz.
 
+## Despliegue en producción
+
+Pasos recomendados:
+
+1. Configura `.env` con `DJANGO_DEBUG=false` y hosts reales en `DJANGO_ALLOWED_HOSTS`.
+2. Instala dependencias.
+3. Aplica migraciones.
+4. Recolecta estáticos.
+5. Ejecuta `gunicorn` con el módulo WSGI.
+
+Comandos:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+gunicorn configuracion.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+```
+
+Notas de seguridad:
+
+- Define un `DJANGO_SECRET_KEY` robusto en producción.
+- Si terminas TLS en un proxy (Nginx/Traefik), mantén `X-Forwarded-Proto` habilitado.
+- Ajusta `DJANGO_CSRF_TRUSTED_ORIGINS` al dominio real (por ejemplo, `https://tu-dominio.com`).
+
 ## Configuración de CrewAI
 
 Instalación recomendada:
