@@ -1,0 +1,16 @@
+[Unit]
+Description=Gunicorn para chatbot_con_memoria
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=__RUTA_PROYECTO__
+EnvironmentFile=__RUTA_PROYECTO__/.env
+ExecStart=__RUTA_PROYECTO__/.venv/bin/gunicorn configuracion.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 120
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

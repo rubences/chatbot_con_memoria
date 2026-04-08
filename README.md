@@ -107,6 +107,36 @@ Notas de seguridad:
 - Si terminas TLS en un proxy (Nginx/Traefik), mantén `X-Forwarded-Proto` habilitado.
 - Ajusta `DJANGO_CSRF_TRUSTED_ORIGINS` al dominio real (por ejemplo, `https://tu-dominio.com`).
 
+### Produccion con systemd + Nginx + TLS
+
+Se incluyen plantillas y un script en:
+
+- `deploy/systemd/chatbot_con_memoria.service`
+- `deploy/nginx/chatbot_con_memoria.conf`
+- `deploy/scripts/instalar_produccion.sh`
+
+Requisitos en servidor Linux:
+
+1. El proyecto debe estar en una ruta fija (por ejemplo, `/opt/chatbot_con_memoria`).
+2. DNS del dominio apuntando al servidor.
+3. Puerto 80/443 abierto.
+
+Ejemplo de ejecución:
+
+```bash
+cd /opt/chatbot_con_memoria
+DOMINIO=tu-dominio.com RUTA_PROYECTO=/opt/chatbot_con_memoria bash deploy/scripts/instalar_produccion.sh
+```
+
+El script hace:
+
+1. Instala Nginx y certbot.
+2. Crea/actualiza entorno virtual e instala dependencias.
+3. Ejecuta migraciones y `collectstatic`.
+4. Instala servicio systemd de Gunicorn.
+5. Instala sitio Nginx.
+6. Emite certificado TLS y activa redirección a HTTPS.
+
 ## Configuración de CrewAI
 
 Instalación recomendada:
